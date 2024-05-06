@@ -3,7 +3,7 @@ library time_seek_slider;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:intl/intl.dart';
+// import 'package:intl/intl.dart';
 
 class TimeSeekSlider extends StatefulWidget {
   const TimeSeekSlider({
@@ -86,7 +86,7 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
   // Selected DateTime in local widget.
   var _currentTime = DateTime.now();
   // Start DateTime of this widget.
-  var _periodStart = DateTime.now().subtract(const Duration(hours: 12));
+  // var _periodStart = DateTime.now().subtract(const Duration(hours: 12));
   // End DateTime of this widget.
   var _periodEnd = DateTime.now().add(const Duration(hours: 8));
 
@@ -105,8 +105,6 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
   // Previous section time.
   int _prevSectionTime = 0;
   bool _isNotDisplayDate = false;
-
-  final _formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
 
 
   @override
@@ -135,12 +133,12 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
   /// Calculate the term for ListView.
   void _setPeriod() {
     // Calc start of term.
-    _periodStart = _calcPeriod(widget.from);
+    // _periodStart = _calcPeriod(widget.from);
     // Calc end of term.
     _periodEnd = _calcPeriod(widget.to);
 
-    //print('[_setPeriod] Current: ${_formatter.format(_currentTime)}');
-    //print('[_setPeriod] Term：${_formatter.format(_periodStart)}〜${_formatter.format(_periodEnd)}');
+    //print('[_setPeriod] Current: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(_currentTime)}');
+    //print('[_setPeriod] Term：${DateFormat('yyyy-MM-dd HH:mm:ss').format(_periodStart)}〜${_formatter.format(_periodEnd)}');
   }
 
   /// Adjust the time Considering the duration of section.
@@ -182,7 +180,7 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
   DateTime _getSelectedTimeFromPosition(double pos) {
     var sec = pos / widget.sectionWidth * widget.sectionTime;
     var newTime = _periodEnd.subtract(Duration(seconds: sec.toInt() - widget.sectionTime));
-    //print('[_getSelectedTimeFromPosition] ${_formatter.format(newTime)}');
+    //print('[_getSelectedTimeFromPosition] ${DateFormat('yyyy-MM-dd HH:mm:ss').format(newTime)}');
     return newTime;
   }
 
@@ -232,28 +230,6 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
 
     // Notify the position changed to the parent widget.
     widget.onChangedSelectedTime(newTime);
-  }
-
-  /// Get the width of ListView.
-  /// get the height of ListView and the adjusted offset at the same time.
-  /// @return Pixel
-  int _getSliderWidth() {
-
-    final RenderBox? renderBox = _widgetKey.currentContext?.findRenderObject() as RenderBox?;
-    if (renderBox != null) {
-      final size = renderBox.size;
-      _height = size.height;
-      // Calculate the offset since it varies depending on the section time..
-      _offset = widget.sectionWidth - size.width / 2;
-      //print('[_getSliderWidth] (w, h)=(${size.width}, ${size.height}) , offset=$_offset');
-      return size.width.toInt();
-    }
-
-    //print('[_getSliderWidth] 0.0');
-    _height = 0;
-    _offset = 0;
-
-    return 0;
   }
 
   /// Get the background color of the section starting at the specified time.
