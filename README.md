@@ -17,7 +17,7 @@ Time Seek Slider widget to display and select date and time.
 
 ![](doc/images/time_seek_slider_001.png)
 
-- Set term of slider (from, to)
+- Set available term (fixedTerm, from, to)
 - Set width of section (sectionWidth)
 - Select time of section (sectionTime: 1m, 10m, 1h, 3h, 12h, 24h)
 - Select color of primary and secondary section
@@ -27,7 +27,7 @@ Time Seek Slider widget to display and select date and time.
 
 ## Getting started
 
-Add `time_seek_slider: ^0.0.1` to your `pubspec.yaml` dependencies. And import it:
+Add `time_seek_slider: ^0.0.2` to your `pubspec.yaml` dependencies. And import it:
 ```
 import 'package:time_seek_slider/time_seek_slider.dart';
 ```
@@ -37,11 +37,26 @@ import 'package:time_seek_slider/time_seek_slider.dart';
 Simply create a `TimeSeekSlider` widget, and pass the required params.   
 Add longer examples to `/example` folder.
 ```dart
+DateTime _selectedTime = DateTime(2024,4,28,15,30);
+
+TimeSeekSlider(
+  selectedTime: _selectedTime,
+  onChangedSelectedTime: (time) {
+    setState(() {
+      _selectedTime = time;
+    });
+  },
+),
+```
+
+If use fixed term, set `fixedTerm = true`.
+```dart
 DateTime _from = DateTime(2024,4,28,0,0);
 DateTime _to = DateTime(2024,4,29,0,0);
 DateTime _selectedTime = DateTime(2024,4,28,15,30);
 
 TimeSeekSlider(
+  fixedTerm: true
   from: _from,
   to: _to,
   selectedTime: _selectedTime,
@@ -53,13 +68,15 @@ TimeSeekSlider(
 ),
 ```
 
+
 ## Params
 
 | Param | M/O | Type |  |
 |--|--|--|--|
-| from | M | DateTime | Start time of slider |
-| to | M | DateTime | End time of slider |
 | selectedTime | M | DateTime | Selected time |
+| fixedTerm | O | bool | Set if available term fixed |
+| from | O | DateTime | Start time of fixed term |
+| to | O | DateTime | End time of fixed term |
 | sectionTime | O | int | Time of one section |
 | sectionWidth | O | int | Width (px) of one section |
 | sectionColorPrimery | O | Color | Color of primery section |

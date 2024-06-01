@@ -38,10 +38,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   bool _isPlaying = false;
   // selected Date.
-  DateTime _selectedTime = DateTime(2024,4,28,15, 30);
+  DateTime _selectedTime = DateTime(2024,6,1,13,30);
   // term.
-  final DateTime _from = DateTime(2024,4,28,0,0);
-  final DateTime _to = DateTime(2024,4,29,0,0);
+  final DateTime _from = DateTime(2024,6,1,12,0);
+  final DateTime _to = DateTime(2024,6,1,14,0);
   
   int _sectionTime = TimeSeekSlider.sectionHour;
 
@@ -60,7 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
       if (_isPlaying) {
         setState(() {
           _selectedTime = _selectedTime.add(const Duration(seconds: 10));
-          // print('[TimeSeekSlider] Current: ${formatter.format(_selectedTime)}');
+          //print('[TimeSeekSlider] Current: ${formatter.format(_selectedTime)}');
         });
       }
     });
@@ -69,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
 
-    // print('[MyHomePage.build] Enter');
+    //print('[MyHomePage.build] Enter');
 
     // Layer 0
     List<TimePeriod> timePeriods0 = [];
@@ -124,6 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                   child: TimeSeekSlider(
+                    fixedTerm: true,
                     from: _from,
                     to: _to,
                     selectedTime: _selectedTime,
@@ -133,7 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     sectionColorSecondary: Colors.blue[100],
                     events: timeEvents,
                     onChangedSelectedTime: (time) {
-                      // print('new time=${formatter.format(time)}');
+                      //print('new time=${formatter.format(time)}');
                       setState(() {
                         _selectedTime = time;
                       });

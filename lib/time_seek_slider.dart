@@ -8,9 +8,10 @@ import 'package:flutter/rendering.dart';
 class TimeSeekSlider extends StatefulWidget {
   const TimeSeekSlider({
     super.key,
-    required this.from,
-    required this.to,
     required this.selectedTime,
+    this.fixedTerm = false,
+    this.from,
+    this.to,
     this.sectionTime = sectionHour,
     this.sectionWidth = 120,
     this.sectionColorPrimery,
@@ -21,10 +22,12 @@ class TimeSeekSlider extends StatefulWidget {
 
   /// Selected DateTime.
   final DateTime selectedTime;
+  /// Whether the term is fixed or not.
+  final bool fixedTerm;
   /// Start DateTime of Slider.
-  final DateTime from;
+  final DateTime? from;
   /// End DateTime of Slider.
-  final DateTime to;
+  final DateTime? to;
 
 
   /// Time span of one section.
@@ -90,21 +93,25 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
   // End DateTime of this widget.
   var _periodEnd = DateTime.now().add(const Duration(hours: 8));
 
+  var _scrollLimitFrom = DateTime.now().subtract(const Duration(hours: 8));
+  var _scrollLimitTo = DateTime.now().add(const Duration(hours: 8));
+
   // Width of this widget.
   double _width = 0.0;
   // Height of this widget.
   double _height = 0.0;
   // Offset position for calculate selected DateTime.
   double _offset = 0.0;
+  // num of sections in ListView.
+  int _numSections = 10;
 
   // ScrollController for ListView
   final ScrollController _scrollController = ScrollController();
+  bool _isAddedScrollListener = false;
+  bool _isScrollingListener = false;
+
   // Whether user is dragging the ListView or not.
   bool _isScrolling = false;
-
-  // Previous section time.
-  int _prevSectionTime = 0;
-  bool _isNotDisplayDate = false;
 
 
   @override
@@ -113,13 +120,52 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
 
     // Add ScrollController to ListView.
     _scrollController.addListener(_scrollListener);
+
     _currentTime = widget.selectedTime;
+    // set period end to (current time + 10 sections).
+    _periodEnd = _calcPeriod(_currentTime.add(Duration(seconds: widget.sectionTime * _numSections)));
+    // set available period of ListView.
+    _scrollLimitFrom = _calcPeriod(_currentTime.subtract(Duration(seconds: widget.sectionTime * _numSections)));
+    _scrollLimitTo = _calcPeriod(_periodEnd.subtract(Duration(seconds: widget.sectionTime * (_numSections ~/ 2) + 1)));
   }
 
   @override
   void didUpdateWidget(covariant TimeSeekSlider oldWidget) {
 
     _currentTime = widget.selectedTime;
+
+    // Add Listener to check scrolling.
+    if (_isAddedScrollListener == false) {
+      _scrollController.position.isScrollingNotifier.addListener(() {
+        if (_isScrollingListener == false && _scrollController.position.isScrollingNotifier.value == true) {
+          // Start scrolling.
+          _isScrollingListener = true;
+          _isScrolling = true;
+          //print('[isScrollingNotifier] Scrolling: $_isScrolling');
+        }
+        else if (_isScrollingListener == true && _scrollController.position.isScrollingNotifier.value == false) {
+          // End scrolling.
+          setState(() {
+            _isScrollingListener = false;
+            _isScrolling = false;
+          });
+          //print('[isScrollingNotifier] Scrolling: $_isScrolling');
+        }
+        //print('[isScrollingNotifier] _isScrollingListener: $_isScrollingListener');
+      });
+      _isAddedScrollListener = true;
+    }
+
+    // Update the term of ListView because sectionTime was changed.
+    if (oldWidget.sectionTime != widget.sectionTime) {
+      //print('[didUpdateWidget] sectionTime changed.');
+      _currentTime = widget.selectedTime;
+      // set period end to (current time + 10 sections).
+      _periodEnd = _calcPeriod(_currentTime.add(Duration(seconds: widget.sectionTime * _numSections)));
+      // set available period of ListView.
+      _scrollLimitFrom = _calcPeriod(_currentTime.subtract(Duration(seconds: widget.sectionTime * _numSections)));
+      _scrollLimitTo = _calcPeriod(_periodEnd.subtract(Duration(seconds: widget.sectionTime * (_numSections ~/ 2) + 1)));
+    }
 
     super.didUpdateWidget(oldWidget);
   }
@@ -128,17 +174,6 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
   void dispose() {
     _scrollController.dispose();
     super.dispose();
-  }
-
-  /// Calculate the term for ListView.
-  void _setPeriod() {
-    // Calc start of term.
-    // _periodStart = _calcPeriod(widget.from);
-    // Calc end of term.
-    _periodEnd = _calcPeriod(widget.to);
-
-    //print('[_setPeriod] Current: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(_currentTime)}');
-    //print('[_setPeriod] Term：${DateFormat('yyyy-MM-dd HH:mm:ss').format(_periodStart)}〜${_formatter.format(_periodEnd)}');
   }
 
   /// Adjust the time Considering the duration of section.
@@ -196,11 +231,6 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
   /// Listener when ListView was scrolled.
   void _scrollListener() {
     //print('[_scrollListener] Enter');
-    if (_isNotDisplayDate) {
-      setState(() {
-        _isNotDisplayDate = false;
-      });
-    }
 
     if (_scrollController.position.userScrollDirection == ScrollDirection.idle) {
       // _isScrolling = false;
@@ -212,6 +242,15 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
       //print('[_scrollListener] Center Pos: $pos px , Right Pos: ${_scrollController.position.pixels} px');
       // Get the time of this position.
       var newTime = _getSelectedTimeFromPosition(pos);
+
+      // Check the time is in the fixed term.
+      if (widget.fixedTerm && widget.from != null && widget.to != null) {
+        if (newTime.isBefore(widget.from!)) {
+          newTime = widget.from!;
+        } else if (widget.to!.isBefore(newTime)) {
+          newTime = widget.to!;
+        }
+      }
       _currentTime = newTime;
 
       // Notify the position changed to the parent widget.
@@ -226,6 +265,15 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
     //print('[_scrollListener] Tap Pos: $pos px , Right Pos: ${_scrollController.position.pixels} px');
     // Get the time from position.
     var newTime = _getSelectedTimeFromPosition(pos);
+
+    // Check the time is in the fixed term.
+    if (widget.fixedTerm && widget.from != null && widget.to != null) {
+      if (newTime.isBefore(widget.from!)) {
+        newTime = widget.from!;
+      } else if (widget.to!.isBefore(newTime)) {
+        newTime = widget.to!;
+      }
+    }
     _currentTime = newTime;
 
     // Notify the position changed to the parent widget.
@@ -273,6 +321,15 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
       }
     }
 
+    // Check the time is in the fixed term.
+    if (widget.fixedTerm && widget.from != null && widget.to != null) {
+      if (time.isBefore(widget.from!)) {
+        return Colors.grey[400];
+      } else if (widget.to!.isBefore(time) || widget.to!.isAtSameMomentAs(time)) {
+        return Colors.grey[400];
+      }
+    }
+
     if (widget.sectionColorPrimery == null || widget.sectionColorSecondary == null) {
       return colorIndex == 0 ? Colors.grey[300] : Colors.grey[400];
     }
@@ -283,26 +340,43 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
   Widget build(BuildContext context) {
     //print('[TimeSeekSlider.build] Enter');
 
-    // Calculate the term of ListView.
-    _setPeriod();
-
-    if (_prevSectionTime != widget.sectionTime) {
-      _isNotDisplayDate = true;
-    }
-    _prevSectionTime = widget.sectionTime;
-
     return LayoutBuilder(
       builder: (context, constraints) {
         //print('[TimeSeekSlider.LayoutBuilder] Enter');
+        //print('    Current   : ${DateFormat('yyyy-MM-dd HH:mm:ss').format(_currentTime)}');
+        //print('    Period End: ~ ${DateFormat('yyyy-MM-dd HH:mm:ss').format(_periodEnd)}');
+        //print('    Scrl Limit: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(_scrollLimitFrom)} ~ ${DateFormat('yyyy-MM-dd HH:mm:ss').format(_scrollLimitTo)}');
 
         // Get latest size before build.
         _width = constraints.maxWidth;
         _height = constraints.maxHeight;
         _offset = widget.sectionWidth - constraints.maxWidth / 2;
-        //print('[TimeSeekSlider.LayoutBuilder] (w, h)=(${_width}, ${_height}) , offset=$_offset');
+
+        // num of sections in ListView.
+        _numSections = _width ~/ widget.sectionWidth;
+        if (_numSections < 10) {
+          _numSections = 10;
+        }
+        //print('[TimeSeekSlider.LayoutBuilder] (w, h)=(${_width}, ${_height}) , offset=$_offset, numSections=$_numSections');
 
         // Scroll ListView to specific position.
         if (_isScrolling == false) {
+          //print('[build] Update Scroll Position (isScrolling = false)');
+          // Update the term of ListView because out of scroll limit.
+          if (_currentTime.isAfter(_scrollLimitTo)) {
+            //print('    Over scroll limit.');
+            // set period end to (current time + 10 sections).
+            _periodEnd = _calcPeriod(_currentTime.add(Duration(seconds: widget.sectionTime * _numSections)));
+            _scrollLimitFrom = _calcPeriod(_currentTime.subtract(Duration(seconds: widget.sectionTime * _numSections)));
+            _scrollLimitTo = _calcPeriod(_periodEnd.subtract(Duration(seconds: widget.sectionTime * (_numSections ~/ 2) + 1)));
+          }
+          if (_currentTime.isBefore(_scrollLimitFrom)) {
+            //print('    Under scroll limit.');
+            // set period end to (current time + 10 sections).
+            _periodEnd = _calcPeriod(_currentTime.add(Duration(seconds: widget.sectionTime * _numSections)));
+            _scrollLimitFrom = _calcPeriod(_currentTime.subtract(Duration(seconds: widget.sectionTime * _numSections)));
+            _scrollLimitTo = _calcPeriod(_periodEnd.subtract(Duration(seconds: widget.sectionTime * (_numSections ~/ 2) + 1)));
+          }
           _scrollToPosition(_getSelectedPosition(_currentTime));
         } else {
           // don't scroll when scrolling manually by user.
@@ -312,7 +386,6 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
         return GestureDetector(
           onTapUp: (detail) {
             // Move to tapped position when tapped
-            //print('[tupUp] offset=(${detail.localPosition.dx}, ${detail.localPosition.dy})');
             _onTapSlider(detail.localPosition.dx);
           },
           child: Stack(
@@ -351,7 +424,13 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
 
                   // Get the events included in term of this item.
                   List<OverlayEvent> overlayEvents = [];
-                  if (widget.events != null) {
+                  bool isEvent = (widget.events != null);
+                  if (widget.fixedTerm && widget.from != null && widget.to != null) {
+                    if (itemStart.isBefore(widget.from!) || itemStart.isAfter(widget.to!) || itemStart.isAtSameMomentAs(widget.to!) ) {
+                      isEvent = false;
+                    }
+                  }
+                  if (isEvent) {
                     for (var event in widget.events!) {
                       for(var period in event.events) {
                         var relatedPeriod = period.getRelatedPeriod(itemStart, itemEnd);
@@ -367,9 +446,9 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
 
                   return Container(
                     width: widget.sectionWidth.toDouble(),
-                    color: _isNotDisplayDate ? Colors.grey[300] : bgColor,
+                    color: bgColor,
                     // color: bgColor,
-                    child: _isNotDisplayDate ? null : Stack(
+                    child: Stack(
                       children: [
                         // ':mm' or '/dd'
                         Align(
@@ -408,23 +487,6 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
                   painter: TrianglePaint(),
                 )
               ),
-
-              // Drawing Indicator.
-              if (_isNotDisplayDate)
-                const Align(
-                  alignment: Alignment(0.0, 0.0),
-                  child: Text('・・・・',
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              // Align(
-              //   alignment: const Alignment(1.0, 0.0),
-              //   child: Text(formatter.format(_currentTime),),
-              // ),
             ],
           ),
         );
