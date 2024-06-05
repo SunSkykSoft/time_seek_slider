@@ -27,7 +27,7 @@ Time Seek Slider widget to display and select date and time.
 
 ## Getting started
 
-Add `time_seek_slider: ^0.0.2` to your `pubspec.yaml` dependencies. And import it:
+Add `time_seek_slider: ^0.0.3` to your `pubspec.yaml` dependencies. And import it:
 ```
 import 'package:time_seek_slider/time_seek_slider.dart';
 ```
