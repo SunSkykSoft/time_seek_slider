@@ -39,6 +39,8 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _isPlaying = false;
   // selected Date.
   DateTime _selectedTime = DateTime(2024,6,1,13,30);
+  // selecting Date by drag bar
+  DateTime _selectingTime = DateTime(2024,6,1,13,30);
   // term.
   final DateTime _from = DateTime(2024,6,1,12,0);
   final DateTime _to = DateTime(2024,6,1,14,0);
@@ -111,7 +113,8 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(formatter.format(_selectedTime)),
+              Text('Selected : ${formatter.format(_selectedTime)}'),
+              Text('Dragging : ${formatter.format(_selectingTime)}'),
               SizedBox(
                 // width: 300,
                 height: 80,
@@ -133,8 +136,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     sectionColorPrimery: Colors.blue[50],
                     sectionColorSecondary: Colors.blue[100],
                     events: timeEvents,
+                    onChangingSelectedTime: (time) {
+                      // print('[onChangingSelectedTime] time=${formatter.format(time)}');
+                      setState(() {
+                        _selectingTime = time;
+                      });
+                    },
                     onChangedSelectedTime: (time) {
-                      //print('new time=${formatter.format(time)}');
+                      // print('[onChangedSelectedTime] time=${formatter.format(time)}');
                       setState(() {
                         _selectedTime = time;
                       });
@@ -206,7 +215,6 @@ class _SectionTimeChoiceState extends State<SectionTimeChoice> {
         ButtonSegment<int>(
           value: TimeSeekSlider.sectionMinute,
           label: Text('1m'),
-
         ),
       ],
       selected: <int>{selectedRecordType},

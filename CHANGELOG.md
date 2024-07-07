@@ -1,3 +1,8 @@
+## 0.0.4
+
+* Add event `onChangingSelectedTime`
+* `onChangedSelectedTime` event is not fired when dragging the bar. Please use `onChangingSelectedTime` event if you want to get time when dragging the bar.
+
 ## 0.0.3
 
 * Remove intl package

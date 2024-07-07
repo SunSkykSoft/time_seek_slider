@@ -18,6 +18,7 @@ class TimeSeekSlider extends StatefulWidget {
     this.sectionColorSecondary,
     this.events,
     required this.onChangedSelectedTime,
+    this.onChangingSelectedTime,
   });
 
   /// Selected DateTime.
@@ -69,6 +70,9 @@ class TimeSeekSlider extends StatefulWidget {
   /// Callback function when selected DateTime is changed.
   final Function(DateTime) onChangedSelectedTime;
 
+  /// Callback function when selected DateTime is changing by drag.
+  final Function(DateTime)? onChangingSelectedTime;
+
   /// Available values of sectionTime.
   static const int sectionMinute    = 60;
   static const int section10Minute  = 600;
@@ -88,6 +92,8 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
 
   // Selected DateTime in local widget.
   var _currentTime = DateTime.now();
+  // Dragging DateTime
+  var _draggingTime = DateTime.now();
   // Start DateTime of this widget.
   // var _periodStart = DateTime.now().subtract(const Duration(hours: 12));
   // End DateTime of this widget.
@@ -127,34 +133,17 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
     // set available period of ListView.
     _scrollLimitFrom = _calcPeriod(_currentTime.subtract(Duration(seconds: widget.sectionTime * _numSections)));
     _scrollLimitTo = _calcPeriod(_periodEnd.subtract(Duration(seconds: widget.sectionTime * (_numSections ~/ 2) + 1)));
+
+    // Set listener of drag ListView
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _dragListener();
+    });
   }
 
   @override
   void didUpdateWidget(covariant TimeSeekSlider oldWidget) {
 
     _currentTime = widget.selectedTime;
-
-    // Add Listener to check scrolling.
-    if (_isAddedScrollListener == false) {
-      _scrollController.position.isScrollingNotifier.addListener(() {
-        if (_isScrollingListener == false && _scrollController.position.isScrollingNotifier.value == true) {
-          // Start scrolling.
-          _isScrollingListener = true;
-          _isScrolling = true;
-          //print('[isScrollingNotifier] Scrolling: $_isScrolling');
-        }
-        else if (_isScrollingListener == true && _scrollController.position.isScrollingNotifier.value == false) {
-          // End scrolling.
-          setState(() {
-            _isScrollingListener = false;
-            _isScrolling = false;
-          });
-          //print('[isScrollingNotifier] Scrolling: $_isScrolling');
-        }
-        //print('[isScrollingNotifier] _isScrollingListener: $_isScrollingListener');
-      });
-      _isAddedScrollListener = true;
-    }
 
     // Update the term of ListView because sectionTime was changed.
     if (oldWidget.sectionTime != widget.sectionTime) {
@@ -252,9 +241,39 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
         }
       }
       _currentTime = newTime;
+      _draggingTime = newTime;
 
-      // Notify the position changed to the parent widget.
-      widget.onChangedSelectedTime(newTime);
+      // Notify the position changing by drag to the parent widget.
+      if (widget.onChangingSelectedTime != null) {
+        widget.onChangingSelectedTime!(_draggingTime);
+      }
+    }
+  }
+
+  /// Set listener of drag ListView
+  void _dragListener() {
+    // Add Listener to check scrolling.
+    if (_isAddedScrollListener == false) {
+      _scrollController.position.isScrollingNotifier.addListener(() {
+        if (_isScrollingListener == false && _scrollController.position.isScrollingNotifier.value == true) {
+          // Start scrolling.
+          _isScrollingListener = true;
+          _isScrolling = true;
+          // print('[isScrollingNotifier] Scrolling: $_isScrolling');
+        }
+        else if (_isScrollingListener == true && _scrollController.position.isScrollingNotifier.value == false) {
+          // End scrolling.
+          setState(() {
+            _isScrollingListener = false;
+            _isScrolling = false;
+          });
+          // print('[isScrollingNotifier] Scrolling: $_isScrolling');
+          // Notify the position changed to the parent widget.
+          widget.onChangedSelectedTime(_draggingTime);
+        }
+        //print('[isScrollingNotifier] _isScrollingListener: $_isScrollingListener');
+      });
+      _isAddedScrollListener = true;
     }
   }
 
