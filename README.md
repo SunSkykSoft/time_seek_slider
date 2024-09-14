@@ -21,6 +21,8 @@ Time Seek Slider widget to display and select date and time.
 - Set width of section (sectionWidth)
 - Select time of section (sectionTime: 1m, 10m, 1h, 3h, 12h, 24h)
 - Select color of primary and secondary section
+- Select color of time text
+- Show current time over center line
 - Add event layer overlay with height / color / period
 - Drag or Tap to change selected DateTime
 - Recieve event changed time
@@ -28,7 +30,7 @@ Time Seek Slider widget to display and select date and time.
 
 ## Getting started
 
-Add `time_seek_slider: ^0.0.4` to your `pubspec.yaml` dependencies. And import it:
+Add `time_seek_slider: ^0.0.5` to your `pubspec.yaml` dependencies. And import it:
 ```
 import 'package:time_seek_slider/time_seek_slider.dart';
 ```
@@ -80,8 +82,13 @@ TimeSeekSlider(
 | to | O | DateTime | End time of fixed term |
 | sectionTime | O | int | Time of one section |
 | sectionWidth | O | int | Width (px) of one section |
+| timeTextColor | O | Color | Color of time text |
 | sectionColorPrimery | O | Color | Color of primery section |
 | sectionColorSecondary | O | Color | Color of secondary section |
+| centerLineColor | O | Color | Color of center line (current time line) |
+| showCurrentTime | O | ShowCurrentTime | Show current time over center line |
+| currentTimeTextColor | O | Color | Color of current time text |
+| currentTimeTextBackgroundColor | O | Color | Background color of current time text |
 | events | O | List< TimeEvent >? | Event information displayed overlay the slider |
 
 

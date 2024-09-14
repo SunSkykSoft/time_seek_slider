@@ -1,3 +1,10 @@
+## 0.0.5
+
+* Add color properties
+  - Time text
+  - Line of current time
+* Add to display current time on center line
+
 ## 0.0.4
 
 * Add event `onChangingSelectedTime`

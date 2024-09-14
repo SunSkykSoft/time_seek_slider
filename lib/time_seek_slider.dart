@@ -3,6 +3,7 @@ library time_seek_slider;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:intl/intl.dart';
 // import 'package:intl/intl.dart';
 
 class TimeSeekSlider extends StatefulWidget {
@@ -14,8 +15,13 @@ class TimeSeekSlider extends StatefulWidget {
     this.to,
     this.sectionTime = sectionHour,
     this.sectionWidth = 120,
+    this.timeTextColor,
     this.sectionColorPrimery,
     this.sectionColorSecondary,
+    this.centerLineColor,
+    this.showCurrentTime,
+    this.currentTimeTextColor,
+    this.currentTimeTextBackgroundColor,
     this.events,
     required this.onChangedSelectedTime,
     this.onChangingSelectedTime,
@@ -47,6 +53,9 @@ class TimeSeekSlider extends StatefulWidget {
   /// Width should be larger than width of 5 letters.
   final int sectionWidth;
 
+  /// Color of time text.
+  final Color? timeTextColor;
+
   /// Color of primery section.
   ///
   /// Set both of [sectionColorPrimery] and [sectionColorSecondary]
@@ -58,6 +67,16 @@ class TimeSeekSlider extends StatefulWidget {
   /// Set both of [sectionColorPrimery] and [sectionColorSecondary]
   /// if you want to define the colors.
   final Color? sectionColorSecondary;
+
+  /// Color of center line
+  final Color? centerLineColor;
+
+  /// Show current time over center line
+  final ShowCurrentTime? showCurrentTime;
+
+  /// Color of current time Text
+  final Color? currentTimeTextColor;
+  final Color? currentTimeTextBackgroundColor;
 
   /// List of events.
   ///
@@ -128,6 +147,7 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
     _scrollController.addListener(_scrollListener);
 
     _currentTime = widget.selectedTime;
+    _draggingTime = _currentTime;
     // set period end to (current time + 10 sections).
     _periodEnd = _calcPeriod(_currentTime.add(Duration(seconds: widget.sectionTime * _numSections)));
     // set available period of ListView.
@@ -294,6 +314,7 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
       }
     }
     _currentTime = newTime;
+    _draggingTime = newTime;
 
     // Notify the position changed to the parent widget.
     widget.onChangedSelectedTime(newTime);
@@ -377,6 +398,16 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
           _numSections = 10;
         }
         //print('[TimeSeekSlider.LayoutBuilder] (w, h)=(${_width}, ${_height}) , offset=$_offset, numSections=$_numSections');
+
+        // Show current time over center line
+        var showCurrentTime = false;
+        if (widget.showCurrentTime != null) {
+          if (widget.showCurrentTime == ShowCurrentTime.showAlways) {
+            showCurrentTime = true;
+          } else if (widget.showCurrentTime == ShowCurrentTime.showDuringDragging && _isScrolling) {
+            showCurrentTime = true;
+          }
+        }
 
         // Scroll ListView to specific position.
         if (_isScrolling == false) {
@@ -472,12 +503,16 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
                         // ':mm' or '/dd'
                         Align(
                           alignment: const Alignment(-1.0, -1.0),
-                          child: Text(periodStartText),
+                          child: Text(periodStartText,
+                            style: TextStyle(color: widget.timeTextColor ?? Colors.black),
+                          ),
                         ),
                         // 'HH' or 'M'
                         Align(
                           alignment: const Alignment(1.0, -1.0),
-                          child: Text(periodEndText),
+                          child: Text(periodEndText,
+                            style: TextStyle(color: widget.timeTextColor ?? Colors.black),
+                          ),
                         ),
                         // Events
                         for(var oe in overlayEvents)
@@ -497,20 +532,46 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
               // Center Line
               Align(
                 alignment: const Alignment(0.0, -1.0),
-                child: Container(width: 2, color: Colors.black,),
+                child: Container(width: 2, color: widget.centerLineColor ?? Colors.black,),
               ),
               Align(
                 alignment: const Alignment(0.0, -1.0),
                 child: CustomPaint(
                   size: Size(_height * 0.2, _height * 0.1),
-                  painter: TrianglePaint(),
+                  painter: TrianglePaint(fillColor: widget.centerLineColor),
                 )
               ),
+              if (showCurrentTime)
+                Align(
+                  alignment: const Alignment(0.0, -1.0),
+                  child: Padding(
+                    padding: EdgeInsets.only(top: _height * 0.1),
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(4),
+                          color: widget.currentTimeTextBackgroundColor ?? Colors.transparent),
+                      child: Text(DateFormat('HH:mm:ss').format(_draggingTime),
+                        style: TextStyle(color: widget.currentTimeTextColor ?? Colors.black),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         );
       });
   }
+}
+
+/// Type of show current time.
+enum ShowCurrentTime {
+  /// don't show current time
+  dontShow,
+  /// show current time always
+  showAlways,
+  /// show current time during dragging
+  showDuringDragging,
 }
 
 /// Event information class.
@@ -603,6 +664,10 @@ class OverlayEvent {
 
 /// Draw upside down triangle.
 class TrianglePaint extends CustomPainter {
+  Color? fillColor;
+
+  TrianglePaint({this.fillColor});
+
   @override
   void paint(Canvas canvas, Size size) {
     final path = Path()
@@ -612,7 +677,7 @@ class TrianglePaint extends CustomPainter {
       ..lineTo(0, 0,);
 
     final paint = Paint()
-      ..color = Colors.black
+      ..color = fillColor ?? Colors.black
       ..style = PaintingStyle.fill
       ..strokeWidth = 2;
 

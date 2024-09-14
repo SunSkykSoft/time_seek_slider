@@ -132,9 +132,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     to: _to,
                     selectedTime: _selectedTime,
                     sectionTime: _sectionTime,
-                    sectionWidth: 120,
+                    sectionWidth: 100,
+                    timeTextColor: Colors.indigo,
                     sectionColorPrimery: Colors.blue[50],
                     sectionColorSecondary: Colors.blue[100],
+                    centerLineColor: Colors.blueAccent,
+                    showCurrentTime: ShowCurrentTime.showDuringDragging,
+                    currentTimeTextColor: Colors.white,
+                    currentTimeTextBackgroundColor: Colors.blue,
                     events: timeEvents,
                     onChangingSelectedTime: (time) {
                       // print('[onChangingSelectedTime] time=${formatter.format(time)}');
