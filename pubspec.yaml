@@ -1,6 +1,6 @@
 name: time_seek_slider
 description: "Time Seek Slider widget to display and select date and time."
-version: 0.0.5
+version: 0.0.6
 homepage: https://github.com/SunSkykSoft/time_seek_slider
 
 environment:

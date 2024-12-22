@@ -61,7 +61,17 @@ class _MyHomePageState extends State<MyHomePage> {
     Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_isPlaying) {
         setState(() {
-          _selectedTime = _selectedTime.add(const Duration(seconds: 10));
+          if (_sectionTime < TimeSeekSlider.sectionMinute) {
+            _selectedTime = _selectedTime.add(const Duration(seconds: 1));
+          } else if (_sectionTime < TimeSeekSlider.sectionHour) {
+              _selectedTime = _selectedTime.add(const Duration(seconds: 10));
+          } else if (_sectionTime < TimeSeekSlider.section3Hours) {
+            _selectedTime = _selectedTime.add(const Duration(minutes: 10));
+          } else if (_sectionTime < TimeSeekSlider.section12Hours) {
+            _selectedTime = _selectedTime.add(const Duration(minutes: 30));
+          } else {
+            _selectedTime = _selectedTime.add(const Duration(hours: 1));
+          }
           //print('[TimeSeekSlider] Current: ${formatter.format(_selectedTime)}');
         });
       }
@@ -77,24 +87,24 @@ class _MyHomePageState extends State<MyHomePage> {
     List<TimePeriod> timePeriods0 = [];
     for(int i=0; i < 10; i++) {
       timePeriods0.add(TimePeriod(
-          DateTime(2024,4,28,13,00,0).add(Duration(minutes: 40*i)),
-          DateTime(2024,4,28,13,30,0).add(Duration(minutes: 40*i))
+          DateTime(2024, 6, 1,13,00,0).add(Duration(minutes: 40*i)),
+          DateTime(2024, 6, 1,13,30,0).add(Duration(minutes: 40*i))
       ));
     }
     // Layer 1
     List<TimePeriod> timePeriods1 = [];
     for(int i=0; i < 100; i++) {
       timePeriods1.add(TimePeriod(
-          DateTime(2024,4,28,13,00,0).add(Duration(minutes: 10*i)),
-          DateTime(2024,4,28,13,05,0).add(Duration(minutes: 10*i))
+          DateTime(2024, 6, 1,13,00,0).add(Duration(minutes: 10*i)),
+          DateTime(2024, 6, 1,13,05,0).add(Duration(minutes: 10*i))
       ));
     }
     // Layer 2
     List<TimePeriod> timePeriods2 = [];
     for(int i=0; i < 100; i++) {
       timePeriods2.add(TimePeriod(
-          DateTime(2024,4,28,13,00,0).add(Duration(minutes: 10*i)),
-          DateTime(2024,4,28,13,00,0).add(Duration(minutes: 10*i))
+          DateTime(2024, 6, 1,13,00,0).add(Duration(minutes: 10*i)),
+          DateTime(2024, 6, 1,13,00,0).add(Duration(minutes: 10*i))
       ));
     }
     // 追加した順に描画される（後上書き）.
@@ -220,6 +230,14 @@ class _SectionTimeChoiceState extends State<SectionTimeChoice> {
         ButtonSegment<int>(
           value: TimeSeekSlider.sectionMinute,
           label: Text('1m'),
+        ),
+        ButtonSegment<int>(
+          value: TimeSeekSlider.section30Seconds,
+          label: Text('30s'),
+        ),
+        ButtonSegment<int>(
+          value: TimeSeekSlider.section10Seconds,
+          label: Text('10s'),
         ),
       ],
       selected: <int>{selectedRecordType},

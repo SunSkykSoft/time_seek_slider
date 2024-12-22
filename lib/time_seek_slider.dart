@@ -93,6 +93,8 @@ class TimeSeekSlider extends StatefulWidget {
   final Function(DateTime)? onChangingSelectedTime;
 
   /// Available values of sectionTime.
+  static const int section10Seconds = 10;
+  static const int section30Seconds = 30;
   static const int sectionMinute    = 60;
   static const int section10Minute  = 600;
   static const int sectionHour      = 3600;
@@ -201,6 +203,10 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
       return DateTime(time.year, time.month, time.day, time.hour ~/12 * 12, 0, 0);
     } else if (widget.sectionTime == TimeSeekSlider.sectionMinute) {
       return DateTime(time.year, time.month, time.day, time.hour, time.minute, 0);
+    } else if (widget.sectionTime == TimeSeekSlider.section30Seconds) {
+      return DateTime(time.year, time.month, time.day, time.hour, time.minute, time.second ~/30 * 30);
+    } else if (widget.sectionTime == TimeSeekSlider.section10Seconds) {
+      return DateTime(time.year, time.month, time.day, time.hour, time.minute, time.second ~/10 * 10);
     }
     return DateTime(time.year, time.month, time.day, time.hour, time.minute, time.second);
   }
@@ -334,6 +340,16 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
       if ((diff.inDays % 2) == 1) {
         colorIndex = 1;
       }
+    } else if (widget.sectionTime == TimeSeekSlider.section10Seconds) {
+      // use Second Color if the minute of time is odd number.
+      if (((time.second ~/10) % 2) == 1) {
+        colorIndex = 1;
+      }
+    } else if (widget.sectionTime == TimeSeekSlider.section30Seconds) {
+      // use Second Color if the minute of time is odd number.
+      if (((time.second ~/30) % 2) == 1) {
+        colorIndex = 1;
+      }
     } else if (widget.sectionTime == TimeSeekSlider.sectionMinute) {
       // use Second Color if the minute of time is odd number.
       if ((time.minute % 2) == 1) {
@@ -463,7 +479,13 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
                     var periodStartVal = itemStart.day;
                     periodEndText = periodEndVal.toString();
                     periodStartText = '/$periodStartVal';
-
+                  } else if (widget.sectionTime < TimeSeekSlider.sectionMinute) {
+                    // Display Seconds if section time is less than 1 minute.
+                    var periodEndHVal = itemEnd.hour;
+                    var periodEndMVal = itemEnd.minute;
+                    var periodStartVal = itemStart.second;
+                    periodEndText = '$periodEndHVal:${periodEndMVal ~/ widget.sectionTime}';
+                    periodStartText = '${periodEndMVal % widget.sectionTime}:${periodStartVal.toString().padLeft(2, "0")}';
                   } else {
                     // Display Time (HH:mm).
                     var periodEndVal = itemEnd.hour;

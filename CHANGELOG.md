@@ -1,3 +1,8 @@
+## 0.0.6
+
+* Add 10s, 30s to Section Time
+  - 
+
 ## 0.0.5
 
 * Add color properties
