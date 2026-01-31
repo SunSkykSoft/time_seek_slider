@@ -25,12 +25,12 @@ Time Seek Slider widget to display and select date and time.
 - Show current time over center line
 - Add event layer overlay with height / color / period
 - Drag or Tap to change selected DateTime
-- Recieve event changed time
-- Recieve event dragging time
+- Receive event changed time
+- Receive event dragging time
 
 ## Getting started
 
-Add `time_seek_slider: ^0.0.6` to your `pubspec.yaml` dependencies. And import it:
+Add `time_seek_slider: ^0.0.7` to your `pubspec.yaml` dependencies. And import it:
 ```
 import 'package:time_seek_slider/time_seek_slider.dart';
 ```

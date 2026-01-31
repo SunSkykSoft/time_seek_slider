@@ -1,7 +1,10 @@
+## 0.0.7
+
+* Remove intl package dependency
+
 ## 0.0.6
 
 * Add 10s, 30s to Section Time
-  - 
 
 ## 0.0.5
 
