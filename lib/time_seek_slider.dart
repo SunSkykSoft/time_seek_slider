@@ -3,8 +3,14 @@ library time_seek_slider;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:intl/intl.dart';
-// import 'package:intl/intl.dart';
+
+// Helper: simple DateTime formatters to avoid intl dependency
+String _formatHMS(DateTime t) {
+  final hh = t.hour.toString().padLeft(2, '0');
+  final mm = t.minute.toString().padLeft(2, '0');
+  final ss = t.second.toString().padLeft(2, '0');
+  return '\u0000$hh:$mm:$ss'.replaceFirst('\\u0000', '');
+}
 
 class TimeSeekSlider extends StatefulWidget {
   const TimeSeekSlider({
@@ -573,7 +579,7 @@ class TimeSeekSliderState extends State<TimeSeekSlider> {
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(4),
                           color: widget.currentTimeTextBackgroundColor ?? Colors.transparent),
-                      child: Text(DateFormat('HH:mm:ss').format(_draggingTime),
+                      child: Text(_formatHMS(_draggingTime),
                         style: TextStyle(color: widget.currentTimeTextColor ?? Colors.black),
                       ),
                     ),
